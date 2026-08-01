@@ -299,7 +299,7 @@ function initStore() {
     title.textContent = product.name;
     description.textContent = product.description;
     priceEl.textContent = formatMoney(product.price);
-    remaining.textContent = stock;
+    remaining.textContent = availableNow;
     if (product.image) {
       imageEl.style.backgroundImage = `url('${product.image.replace(/'/g, "%27")}')`;
       imageEl.style.backgroundSize = 'cover';
@@ -360,9 +360,11 @@ function initStore() {
   orderButton?.addEventListener('click', () => {
     if (!currentProduct) return;
     const stock = Number(currentProduct.stock || 0);
+    const alreadyInCart = cartQuantityFor(currentProduct.id);
+    const availableNow = Math.max(stock - alreadyInCart, 0);
     const qty = getQuantity();
-    if (qty > stock) {
-      showAlert({ title: 'สินค้าไม่พอ', message: `เหลือในสต็อกอีก ${stock} ชิ้น`, type: 'error' });
+    if (qty > availableNow) {
+      showAlert({ title: 'สินค้าไม่พอ', message: `เหลือในสต็อกอีก ${availableNow} ชิ้น`, type: 'error' });
       return;
     }
     createOrder([{ ...currentProduct, quantity: qty }]);
