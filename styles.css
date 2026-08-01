@@ -238,6 +238,9 @@ body.modal-open { overflow: hidden; }
   inset: 0;
   background: linear-gradient(0deg, rgba(8,11,17,.28), transparent 48%), radial-gradient(circle at 44% 47%, transparent 0 8%, rgba(238,24,48,.28) 9% 10%, transparent 12%);
 }
+.modal-image.has-photo { background-color: #0c0d10; }
+.modal-image.has-photo::after { display: none; }
+.modal-image.has-photo .camera-tag { display: none; }
 .camera-tag {
   position: absolute;
   top: 6px;
@@ -704,7 +707,9 @@ body.theme-dark .order-card { background: var(--surface); }
   display: grid; place-items: center;
   border: 1px dashed var(--border);
   border-radius: 12px;
-  background-size: cover;
+  background-color: #111216;
+  background-size: contain;
+  background-repeat: no-repeat;
   background-position: center;
   color: var(--muted);
   overflow: hidden;
@@ -735,7 +740,8 @@ body.theme-dark .admin-product-card { background: var(--surface, #101116); }
   display: grid; place-items: center;
   border-radius: 10px;
   background-color: #111216;
-  background-size: cover;
+  background-size: contain;
+  background-repeat: no-repeat;
   background-position: center;
   color: #6c6d74;
   flex: 0 0 auto;

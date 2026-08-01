@@ -302,12 +302,18 @@ function initStore() {
     remaining.textContent = availableNow;
     if (product.image) {
       imageEl.style.backgroundImage = `url('${product.image.replace(/'/g, "%27")}')`;
-      imageEl.style.backgroundSize = 'cover';
+      imageEl.style.backgroundSize = 'contain';
+      imageEl.style.backgroundRepeat = 'no-repeat';
       imageEl.style.backgroundPosition = 'center';
+      imageEl.style.backgroundColor = '#0c0d10';
+      imageEl.classList.add('has-photo');
     } else {
       imageEl.style.backgroundImage = '';
       imageEl.style.backgroundSize = '';
+      imageEl.style.backgroundRepeat = '';
       imageEl.style.backgroundPosition = '';
+      imageEl.style.backgroundColor = '';
+      imageEl.classList.remove('has-photo');
     }
     quantity.max = String(Math.max(availableNow, 1));
     quantity.value = availableNow > 0 ? '1' : '0';
@@ -384,7 +390,7 @@ function initStore() {
 function renderStoreProducts() {
   const grid = document.querySelector('.product-grid');
   if (!grid) return;
-  grid.innerHTML = getProducts().map((product, index) => `<article class="product-card ${product.featured || index === 0 ? 'featured' : ''}" data-product-id="${escapeHTML(product.id)}" tabindex="0" role="button"><span class="badge ${product.featured || index === 0 ? 'red' : 'dark'}">${product.featured || index === 0 ? 'สินค้าแนะนำ' : 'สินค้ายอดนิยม'}</span><div class="product-image"${product.image ? ` style="background-image:url('${escapeHTML(product.image)}');background-size:cover;background-position:center;filter:none;"` : ''}></div><div class="product-body"><h2>${escapeHTML(product.name)}</h2><p>${escapeHTML(product.description)}</p><strong class="price">${formatMoney(product.price)}</strong>${Number(product.stock || 0) <= 0 ? '<em class="stock-out">สินค้าหมด</em>' : ''}</div></article>`).join('');
+  grid.innerHTML = getProducts().map((product, index) => `<article class="product-card ${product.featured || index === 0 ? 'featured' : ''}" data-product-id="${escapeHTML(product.id)}" tabindex="0" role="button"><span class="badge ${product.featured || index === 0 ? 'red' : 'dark'}">${product.featured || index === 0 ? 'สินค้าแนะนำ' : 'สินค้ายอดนิยม'}</span><div class="product-image"${product.image ? ` style="background-image:url('${escapeHTML(product.image)}');background-size:contain;background-repeat:no-repeat;background-position:center;background-color:#0c0d10;filter:none;"` : ''}></div><div class="product-body"><h2>${escapeHTML(product.name)}</h2><p>${escapeHTML(product.description)}</p><strong class="price">${formatMoney(product.price)}</strong>${Number(product.stock || 0) <= 0 ? '<em class="stock-out">สินค้าหมด</em>' : ''}</div></article>`).join('');
 }
 
 function initHeroSlider() {
