@@ -6,7 +6,7 @@ const PRODUCTS_KEY = 'freal_boxser_products';
 const DONATE_KEY = 'freal_boxser_donations';
 const THEME_KEY = 'freal_boxser_theme';
 const USERS_KEY = 'freal_boxser_users';
-const PRODUCT = { id: 'night-vision', name: 'Night Vision Goggles', description: 'อุปกรณ์มองกลางคืน เหมาะสำหรับภารกิจลับหรือดูแลเวลากลางคืน', price: 3500, stock: 4, featured: true };
+const PRODUCT = { id: 'night-vision', name: 'Night Vision Goggles', description: 'อุปกรณ์มองกลางคืน เหมาะสำหรับภารกิจลับหรือดูแลเวลากลางคืน', price: 3500, stock: 4, lowStock: 3, featured: true };
 
 function getUser() {
   try { return JSON.parse(localStorage.getItem(AUTH_KEY)); } catch { return null; }
@@ -164,6 +164,50 @@ function initChrome() {
   document.querySelectorAll(`[data-nav="${page}"]`).forEach((link) => link.classList.add('is-active'));
   const count = readList(CART_KEY).reduce((sum, item) => sum + Number(item.quantity || 1), 0);
   document.querySelectorAll('[data-cart-count]').forEach((el) => { el.textContent = count; el.hidden = count === 0; });
+}
+
+function initMobileNav() {
+  const toggles = Array.from(document.querySelectorAll('[data-menu-toggle]'));
+  if (!toggles.length) return;
+
+  const closeToggle = (btn, toolbar) => {
+    toolbar.classList.remove('is-open');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.innerHTML = '<i data-lucide="menu"></i>';
+    refreshIcons(btn);
+  };
+
+  toggles.forEach((btn) => {
+    const toolbar = btn.parentElement?.querySelector('.toolbar');
+    if (!toolbar) return;
+    btn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const isOpen = toolbar.classList.toggle('is-open');
+      btn.setAttribute('aria-expanded', String(isOpen));
+      btn.innerHTML = `<i data-lucide="${isOpen ? 'x' : 'menu'}"></i>`;
+      refreshIcons(btn);
+    });
+    toolbar.querySelectorAll('a, button').forEach((el) => {
+      el.addEventListener('click', () => closeToggle(btn, toolbar));
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    toggles.forEach((btn) => {
+      const toolbar = btn.parentElement?.querySelector('.toolbar');
+      if (!toolbar || !toolbar.classList.contains('is-open')) return;
+      if (toolbar.contains(event.target) || btn.contains(event.target)) return;
+      closeToggle(btn, toolbar);
+    });
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    toggles.forEach((btn) => {
+      const toolbar = btn.parentElement?.querySelector('.toolbar');
+      if (toolbar?.classList.contains('is-open')) closeToggle(btn, toolbar);
+    });
+  });
 }
 
 function initLogin() {
@@ -363,6 +407,32 @@ function initHeroSlider() {
   start();
 }
 
+function renderAdminProductCard(product) {
+  const stock = Number(product.stock || 0);
+  const threshold = Number(product.lowStock ?? 3);
+  let statusClass = 'stock-ok', statusLabel = 'พร้อมขาย', statusIcon = 'circle-check';
+  if (stock <= 0) { statusClass = 'stock-out'; statusLabel = 'สินค้าหมด'; statusIcon = 'circle-x'; }
+  else if (stock <= threshold) { statusClass = 'stock-low'; statusLabel = 'สต็อกต่ำ'; statusIcon = 'triangle-alert'; }
+  const thumbStyle = product.image ? ` style="background-image:url('${escapeHTML(product.image)}')"` : '';
+  return `
+    <article class="admin-product-card" data-product-id="${escapeHTML(product.id)}">
+      <div class="admin-product-thumb"${thumbStyle}>${product.image ? '' : '<i data-lucide="image-off"></i>'}</div>
+      <div class="admin-product-info">
+        <h3>${escapeHTML(product.name)}</h3>
+        <p>${formatMoney(product.price)}</p>
+        <span class="stock-pill ${statusClass}"><i data-lucide="${statusIcon}"></i>${statusLabel} · ${stock} ชิ้น</span>
+      </div>
+      <div class="admin-product-stock-actions">
+        <button type="button" data-stock-minus aria-label="ลดสต็อก"><i data-lucide="minus"></i></button>
+        <button type="button" data-stock-plus aria-label="เพิ่มสต็อก"><i data-lucide="plus"></i></button>
+      </div>
+      <div class="admin-product-actions">
+        <button class="pill ghost-pill" type="button" data-edit-product><i data-lucide="pencil"></i><span>แก้ไข</span></button>
+        <button class="pill" type="button" data-delete-product><i data-lucide="trash-2"></i><span>ลบ</span></button>
+      </div>
+    </article>`;
+}
+
 function initAdmin() {
   if (document.body.dataset.page !== 'admin') return;
   const user = requireAuth();
@@ -375,16 +445,87 @@ function initAdmin() {
   const productForm = document.querySelector('[data-admin-product-form]');
   const productsMetric = document.querySelector('[data-admin-products]');
   const productsList = document.querySelector('[data-admin-products-list]');
+  const searchInput = document.querySelector('[data-admin-product-search]');
+  const sortToggle = document.querySelector('[data-sort-toggle]');
+  const lowStockSummary = document.querySelector('[data-low-stock-summary]');
   const statusText = { pending: 'รอชำระเงิน', cancelled: 'ยกเลิกแล้ว', paid: 'ชำระเงินแล้ว' };
+  if (!productForm) return;
+
+  const idInput = productForm.querySelector('input[name="product-id"]');
+  const nameInput = productForm.querySelector('[name="product-name"]');
+  const priceInput = productForm.querySelector('[name="product-price"]');
+  const stockInput = productForm.querySelector('[name="product-stock"]');
+  const lowStockInput = productForm.querySelector('[name="product-low-stock"]');
+  const descriptionInput = productForm.querySelector('[name="product-description"]');
+  const imageInput = productForm.querySelector('[data-image-input]');
+  const imageFile = productForm.querySelector('[data-image-file]');
+  const imagePreview = productForm.querySelector('[data-image-preview]');
+  const submitLabel = productForm.querySelector('[data-submit-label]');
+  const cancelEdit = productForm.querySelector('[data-cancel-edit]');
+
+  let searchTerm = '';
+  let sortLowFirst = false;
+
+  const updatePreview = () => {
+    const value = imageInput.value.trim();
+    if (value) {
+      imagePreview.style.backgroundImage = `url('${value.replace(/'/g, '%27')}')`;
+      imagePreview.innerHTML = '';
+    } else {
+      imagePreview.style.backgroundImage = '';
+      imagePreview.innerHTML = '<i data-lucide="image"></i>';
+      refreshIcons(imagePreview);
+    }
+  };
+
+  const resetForm = () => {
+    productForm.reset();
+    idInput.value = '';
+    lowStockInput.value = '3';
+    updatePreview();
+    submitLabel.textContent = 'บันทึกสินค้า';
+    cancelEdit.hidden = true;
+  };
+
+  const loadProductToForm = (product) => {
+    idInput.value = product.id;
+    nameInput.value = product.name;
+    priceInput.value = product.price;
+    stockInput.value = product.stock;
+    lowStockInput.value = product.lowStock ?? 3;
+    descriptionInput.value = product.description || '';
+    imageInput.value = product.image || '';
+    updatePreview();
+    submitLabel.textContent = 'บันทึกการแก้ไข';
+    cancelEdit.hidden = false;
+    productForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const render = () => {
     const orders = readList(ORDERS_KEY);
     const sales = orders.filter((order) => order.status === 'paid').reduce((sum, order) => sum + order.items.reduce((lineSum, item) => lineSum + item.price * item.quantity, 0), 0);
     ordersMetric.textContent = orders.length;
     salesMetric.textContent = formatMoney(sales);
-    const products = getProducts();
-    if (productsMetric) productsMetric.textContent = products.length;
-    if (productsList) productsList.innerHTML = products.map((product) => `<article class="admin-order" data-product-id="${escapeHTML(product.id)}"><div><h3>${escapeHTML(product.name)}</h3><p>${formatMoney(product.price)} · คงเหลือ ${Number(product.stock || 0)} ชิ้น</p></div><button class="pill" type="button" data-delete-product>ลบ</button></article>`).join('');
+
+    const allProducts = getProducts();
+    if (productsMetric) productsMetric.textContent = allProducts.length;
+
+    const lowCount = allProducts.filter((p) => Number(p.stock || 0) > 0 && Number(p.stock || 0) <= Number(p.lowStock ?? 3)).length;
+    const outCount = allProducts.filter((p) => Number(p.stock || 0) <= 0).length;
+    if (lowStockSummary) {
+      lowStockSummary.hidden = lowCount + outCount === 0;
+      const span = lowStockSummary.querySelector('span');
+      if (span) span.textContent = `สต็อกต่ำ ${lowCount} รายการ · สินค้าหมด ${outCount} รายการ`;
+    }
+
+    let visible = allProducts.filter((p) => String(p.name || '').toLowerCase().includes(searchTerm));
+    if (sortLowFirst) visible = [...visible].sort((a, b) => Number(a.stock || 0) - Number(b.stock || 0));
+
+    if (productsList) {
+      productsList.innerHTML = visible.length ? visible.map(renderAdminProductCard).join('') : '<p class="empty-state">ไม่พบสินค้าที่ค้นหา</p>';
+      refreshIcons(productsList);
+    }
+
     list.innerHTML = orders.length ? orders.map((order) => `
       <article class="admin-order" data-order-id="${escapeHTML(order.id)}">
         <div><h3>${escapeHTML(order.id)}</h3><p>${formatThaiDate(order.createdAt)} · ${escapeHTML(statusText[order.status] || order.status)}</p></div>
@@ -394,31 +535,95 @@ function initAdmin() {
     `).join('') : '<p class="empty-state">ยังไม่มีคำสั่งซื้อให้จัดการ</p>';
   };
 
-  refresh?.addEventListener('click', () => { render(); showAlert({ title: 'รีเฟรชข้อมูลแล้ว', message: 'อัปเดตรายการคำสั่งซื้อในระบบหลังบ้านสำเร็จ', type: 'success' }); });
-  productForm?.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const formData = new FormData(productForm);
-    const products = getProducts();
-    products.unshift({ id: makeId(), name: String(formData.get('product-name') || 'สินค้าใหม่'), description: String(formData.get('product-description') || 'สินค้าในร้าน Freal Boxser'), price: Number(formData.get('product-price') || 0), stock: Number(formData.get('product-stock') || 1), image: String(formData.get('product-image') || '').trim(), featured: false });
-    saveProducts(products);
-    productForm.reset();
-    render();
-    showAlert({ title: 'เพิ่มสินค้าสำเร็จ', message: 'สินค้าใหม่ถูกเพิ่มเข้าระบบหลังบ้านแล้ว', type: 'success' });
+  imageInput.addEventListener('input', updatePreview);
+  imageFile.addEventListener('change', () => {
+    const file = imageFile.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { imageInput.value = String(reader.result); updatePreview(); };
+    reader.readAsDataURL(file);
   });
+
+  cancelEdit.addEventListener('click', resetForm);
+
+  searchInput?.addEventListener('input', () => { searchTerm = searchInput.value.trim().toLowerCase(); render(); });
+  sortToggle?.addEventListener('click', () => {
+    sortLowFirst = !sortLowFirst;
+    sortToggle.classList.toggle('is-active', sortLowFirst);
+    render();
+  });
+
+  refresh?.addEventListener('click', () => { render(); showAlert({ title: 'รีเฟรชข้อมูลแล้ว', message: 'อัปเดตรายการคำสั่งซื้อในระบบหลังบ้านสำเร็จ', type: 'success' }); });
+
+  productForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const products = getProducts();
+    const id = idInput.value.trim();
+    const payload = {
+      name: nameInput.value.trim() || 'สินค้าใหม่',
+      description: descriptionInput.value.trim() || 'สินค้าในร้าน Freal Boxser',
+      price: Math.max(Number(priceInput.value || 0), 0),
+      stock: Math.max(Number(stockInput.value || 0), 0),
+      lowStock: Math.max(Number(lowStockInput.value || 3), 0),
+      image: imageInput.value.trim(),
+    };
+    if (id) {
+      const existing = products.find((entry) => entry.id === id);
+      if (existing) Object.assign(existing, payload);
+      saveProducts(products);
+      showAlert({ title: 'แก้ไขสินค้าแล้ว', message: payload.name, type: 'success' });
+    } else {
+      products.unshift({ id: makeId(), featured: false, ...payload });
+      saveProducts(products);
+      showAlert({ title: 'เพิ่มสินค้าสำเร็จ', message: 'สินค้าใหม่ถูกเพิ่มเข้าระบบหลังบ้านแล้ว', type: 'success' });
+    }
+    resetForm();
+    render();
+  });
+
   productsList?.addEventListener('click', (event) => {
     const card = event.target.closest('[data-product-id]');
-    if (!card || !event.target.closest('[data-delete-product]')) return;
-    saveProducts(getProducts().filter((product) => product.id !== card.dataset.productId));
-    render();
-    showAlert({ title: 'ลบสินค้าแล้ว', message: 'อัปเดตรายการสินค้าเรียบร้อย', type: 'success' });
+    if (!card) return;
+    const id = card.dataset.productId;
+    const products = getProducts();
+    const product = products.find((entry) => entry.id === id);
+    if (!product) return;
+
+    if (event.target.closest('[data-edit-product]')) { loadProductToForm(product); return; }
+
+    if (event.target.closest('[data-delete-product]')) {
+      if (!window.confirm(`ยืนยันลบสินค้า "${product.name}" ใช่หรือไม่?`)) return;
+      saveProducts(products.filter((entry) => entry.id !== id));
+      if (idInput.value === id) resetForm();
+      render();
+      showAlert({ title: 'ลบสินค้าแล้ว', message: product.name, type: 'success' });
+      return;
+    }
+
+    if (event.target.closest('[data-stock-minus]')) {
+      product.stock = Math.max(Number(product.stock || 0) - 1, 0);
+      saveProducts(products);
+      render();
+      return;
+    }
+
+    if (event.target.closest('[data-stock-plus]')) {
+      product.stock = Number(product.stock || 0) + 1;
+      saveProducts(products);
+      render();
+    }
   });
+
   list.addEventListener('click', (event) => {
     const card = event.target.closest('[data-order-id]');
     if (!card || !event.target.closest('[data-delete-order]')) return;
+    if (!window.confirm('ยืนยันลบคำสั่งซื้อนี้ใช่หรือไม่?')) return;
     writeList(ORDERS_KEY, readList(ORDERS_KEY).filter((order) => order.id !== card.dataset.orderId));
     render();
     showAlert({ title: 'ลบคำสั่งซื้อแล้ว', message: 'อัปเดตรายการคำสั่งซื้อเรียบร้อย', type: 'success' });
   });
+
+  resetForm();
   render();
 }
 
@@ -577,6 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initChrome();
   refreshIcons();
   document.querySelectorAll('[data-logout]').forEach((button) => button.addEventListener('click', logout));
+  initMobileNav();
   if (document.body.dataset.page === 'login') initLogin();
   initHeroSlider();
   if (document.body.dataset.protected === 'true') {

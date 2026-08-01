@@ -657,3 +657,117 @@ body.theme-dark .order-card { background: var(--surface); }
 /* Out-of-stock indicator and disabled action state */
 .stock-out { display: block; margin-top: 6px; font-size: 12px; font-weight: 800; color: #df0617; }
 .pill:disabled, .icon-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ===== Mobile hamburger navigation ===== */
+.hamburger-btn { display: none; }
+@media (max-width: 780px) {
+  .hamburger-btn { display: inline-flex; }
+  .header-inner { flex-wrap: nowrap; }
+  .toolbar {
+    display: none;
+    position: fixed;
+    inset: 78px 12px auto 12px;
+    z-index: 60;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--surface, #fff);
+    box-shadow: 0 24px 50px rgba(0,0,0,.22);
+  }
+  .toolbar.is-open { display: flex; }
+  .toolbar .nav-link { width: 100%; }
+  .toolbar .nav-link span { display: inline; }
+  .toolbar .pill, .toolbar .icon-btn, .toolbar .user-pill, .toolbar .logout-pill { width: 100%; }
+  .toolbar .icon-btn { justify-content: flex-start; gap: 8px; padding: 0 14px; }
+  .toolbar .icon-btn::after { content: 'สลับโหมดสว่าง/มืด'; font-size: 13px; font-weight: 800; }
+}
+.nav-backdrop { display: none; }
+@media (max-width: 780px) {
+  .nav-backdrop.is-open { display: block; position: fixed; inset: 0; z-index: 50; background: rgba(6,7,10,.45); }
+}
+
+/* ===== Admin product management: images + stock ===== */
+.admin-form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.admin-form textarea { border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; font: inherit; resize: vertical; }
+.admin-image-row { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "url preview" "upload preview"; gap: 10px 14px; align-items: start; }
+.image-url-field { grid-area: url; }
+.upload-btn { grid-area: upload; cursor: pointer; }
+.upload-btn .pill { pointer-events: none; width: fit-content; }
+.admin-image-preview {
+  grid-area: preview;
+  width: 84px; height: 84px;
+  display: grid; place-items: center;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  color: var(--muted);
+  overflow: hidden;
+}
+.admin-form-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.admin-products-toolbar { display: flex; align-items: center; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.admin-products-toolbar .search-wrap { flex: 1 1 200px; background: var(--surface, #fff); }
+.admin-products-toolbar .search-wrap input { flex: 1; border: 0; background: transparent; font: inherit; outline: none; }
+.admin-products-toolbar .pill span { white-space: nowrap; }
+.admin-products-toolbar .pill.is-active { background: linear-gradient(135deg, var(--accent, #df0617), #8d0618); color: #fff; border-color: transparent; }
+.low-stock-flag { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; padding: 10px 14px; border-radius: 10px; background: #fff6e6; color: #9a5b00; font-size: 13px; font-weight: 800; }
+body.theme-dark .low-stock-flag { background: #2b2210; color: #ffcb63; }
+
+.admin-products-list { display: grid; gap: 10px; margin-top: 14px; }
+.admin-product-card {
+  display: grid;
+  grid-template-columns: 56px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fafafa;
+}
+body.theme-dark .admin-product-card { background: var(--surface, #101116); }
+.admin-product-thumb {
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  border-radius: 10px;
+  background-color: #111216;
+  background-size: cover;
+  background-position: center;
+  color: #6c6d74;
+  flex: 0 0 auto;
+}
+.admin-product-info { min-width: 0; }
+.admin-product-info h3 { margin: 0 0 3px; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-product-info p { margin: 0 0 5px; color: var(--muted); font-size: 13px; font-weight: 800; }
+.stock-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+.stock-pill [data-lucide] { width: 13px; height: 13px; }
+.stock-ok { background: #e7f7ec; color: #17803d; }
+.stock-low { background: #fff2d9; color: #9a5b00; }
+.stock-out { display: inline-flex; background: #ffe4e6; color: #b3293b; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+body.theme-dark .stock-ok { background: #103321; color: #4ade80; }
+body.theme-dark .stock-low { background: #2b2210; color: #ffcb63; }
+body.theme-dark .stock-out { background: #33131a; color: #ff8b98; }
+.admin-product-stock-actions { display: inline-flex; align-items: center; gap: 6px; }
+.admin-product-stock-actions button { width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2, #f4f4f6); color: var(--text); display: grid; place-items: center; cursor: pointer; }
+.admin-product-stock-actions [data-lucide] { width: 14px; height: 14px; }
+.admin-product-actions { display: inline-flex; gap: 6px; }
+.admin-product-actions .pill { height: 30px; padding: 0 10px; }
+.admin-product-actions .pill span { display: none; }
+
+@media (max-width: 640px) {
+  .admin-form-grid { grid-template-columns: 1fr; }
+  .admin-image-row { grid-template-columns: 1fr; grid-template-areas: "preview" "url" "upload"; justify-items: start; }
+  .admin-product-card { grid-template-columns: 44px 1fr; grid-template-areas: "thumb info" "stockact stockact" "actions actions"; }
+  .admin-product-thumb { grid-area: thumb; width: 44px; height: 44px; }
+  .admin-product-info { grid-area: info; }
+  .admin-product-stock-actions { grid-area: stockact; justify-content: flex-start; margin-top: 8px; }
+  .admin-product-actions { grid-area: actions; margin-top: 8px; }
+  .product-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 400px) {
+  .product-grid { grid-template-columns: 1fr !important; }
+}
