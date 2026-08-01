@@ -234,6 +234,7 @@ function initStore() {
   const title = modal.querySelector('#modal-product-title');
   const description = modal.querySelector('[data-modal-description]');
   const priceEl = modal.querySelector('[data-modal-price]');
+  const imageEl = modal.querySelector('.modal-image');
   const quantity = modal.querySelector('[data-quantity]');
   const remaining = modal.querySelector('[data-remaining]');
   const closeButtons = modal.querySelectorAll('[data-close-modal]');
@@ -255,6 +256,15 @@ function initStore() {
     description.textContent = product.description;
     priceEl.textContent = formatMoney(product.price);
     remaining.textContent = stock;
+    if (product.image) {
+      imageEl.style.backgroundImage = `url('${product.image.replace(/'/g, "%27")}')`;
+      imageEl.style.backgroundSize = 'cover';
+      imageEl.style.backgroundPosition = 'center';
+    } else {
+      imageEl.style.backgroundImage = '';
+      imageEl.style.backgroundSize = '';
+      imageEl.style.backgroundPosition = '';
+    }
     quantity.max = String(Math.max(availableNow, 1));
     quantity.value = availableNow > 0 ? '1' : '0';
     quantity.disabled = availableNow <= 0;
@@ -328,7 +338,7 @@ function initStore() {
 function renderStoreProducts() {
   const grid = document.querySelector('.product-grid');
   if (!grid) return;
-  grid.innerHTML = getProducts().map((product, index) => `<article class="product-card ${product.featured || index === 0 ? 'featured' : ''}" data-product-id="${escapeHTML(product.id)}" tabindex="0" role="button"><span class="badge ${product.featured || index === 0 ? 'red' : 'dark'}">${product.featured || index === 0 ? 'สินค้าแนะนำ' : 'สินค้ายอดนิยม'}</span><div class="product-image"></div><div class="product-body"><h2>${escapeHTML(product.name)}</h2><p>${escapeHTML(product.description)}</p><strong class="price">${formatMoney(product.price)}</strong>${Number(product.stock || 0) <= 0 ? '<em class="stock-out">สินค้าหมด</em>' : ''}</div></article>`).join('');
+  grid.innerHTML = getProducts().map((product, index) => `<article class="product-card ${product.featured || index === 0 ? 'featured' : ''}" data-product-id="${escapeHTML(product.id)}" tabindex="0" role="button"><span class="badge ${product.featured || index === 0 ? 'red' : 'dark'}">${product.featured || index === 0 ? 'สินค้าแนะนำ' : 'สินค้ายอดนิยม'}</span><div class="product-image"${product.image ? ` style="background-image:url('${escapeHTML(product.image)}');background-size:cover;background-position:center;filter:none;"` : ''}></div><div class="product-body"><h2>${escapeHTML(product.name)}</h2><p>${escapeHTML(product.description)}</p><strong class="price">${formatMoney(product.price)}</strong>${Number(product.stock || 0) <= 0 ? '<em class="stock-out">สินค้าหมด</em>' : ''}</div></article>`).join('');
 }
 
 function initHeroSlider() {
@@ -389,7 +399,7 @@ function initAdmin() {
     event.preventDefault();
     const formData = new FormData(productForm);
     const products = getProducts();
-    products.unshift({ id: makeId(), name: String(formData.get('product-name') || 'สินค้าใหม่'), description: String(formData.get('product-description') || 'สินค้าในร้าน Freal Boxser'), price: Number(formData.get('product-price') || 0), stock: Number(formData.get('product-stock') || 1), featured: false });
+    products.unshift({ id: makeId(), name: String(formData.get('product-name') || 'สินค้าใหม่'), description: String(formData.get('product-description') || 'สินค้าในร้าน Freal Boxser'), price: Number(formData.get('product-price') || 0), stock: Number(formData.get('product-stock') || 1), image: String(formData.get('product-image') || '').trim(), featured: false });
     saveProducts(products);
     productForm.reset();
     render();
