@@ -376,9 +376,10 @@ function initAdmin() {
     if (productsMetric) productsMetric.textContent = products.length;
     if (productsList) productsList.innerHTML = products.map((product) => `<article class="admin-order" data-product-id="${escapeHTML(product.id)}"><div><h3>${escapeHTML(product.name)}</h3><p>${formatMoney(product.price)} · คงเหลือ ${Number(product.stock || 0)} ชิ้น</p></div><button class="pill" type="button" data-delete-product>ลบ</button></article>`).join('');
     list.innerHTML = orders.length ? orders.map((order) => `
-      <article class="admin-order">
+      <article class="admin-order" data-order-id="${escapeHTML(order.id)}">
         <div><h3>${escapeHTML(order.id)}</h3><p>${formatThaiDate(order.createdAt)} · ${escapeHTML(statusText[order.status] || order.status)}</p></div>
         <strong>${formatMoney(order.items.reduce((sum, item) => sum + item.price * item.quantity, 0))}</strong>
+        <button class="pill" type="button" data-delete-order>ลบ</button>
       </article>
     `).join('') : '<p class="empty-state">ยังไม่มีคำสั่งซื้อให้จัดการ</p>';
   };
@@ -400,6 +401,13 @@ function initAdmin() {
     saveProducts(getProducts().filter((product) => product.id !== card.dataset.productId));
     render();
     showAlert({ title: 'ลบสินค้าแล้ว', message: 'อัปเดตรายการสินค้าเรียบร้อย', type: 'success' });
+  });
+  list.addEventListener('click', (event) => {
+    const card = event.target.closest('[data-order-id]');
+    if (!card || !event.target.closest('[data-delete-order]')) return;
+    writeList(ORDERS_KEY, readList(ORDERS_KEY).filter((order) => order.id !== card.dataset.orderId));
+    render();
+    showAlert({ title: 'ลบคำสั่งซื้อแล้ว', message: 'อัปเดตรายการคำสั่งซื้อเรียบร้อย', type: 'success' });
   });
   render();
 }
