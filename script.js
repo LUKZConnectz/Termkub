@@ -240,31 +240,85 @@ function initLogin() {
     const users = getUsers();
     const existing = findUser(username);
 
-    if (existing) {
-      if (existing.password !== password) {
-        showLoginError('ชื่อผู้ใช้นี้มีอยู่แล้วและรหัสผ่านไม่ถูกต้อง');
-        return;
-      }
-      existing.lastLogin = new Date().toISOString();
-      saveUsers(users);
-      setUser({ ...existing });
-    } else {
-      const newUser = {
-        id: makeId(),
-        username,
-        password,
-        role: username.toLowerCase() === 'admin' ? 'admin' : 'user',
-        displayName: username,
-        balance: 0,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-      };
-      users.push(newUser);
-      saveUsers(users);
-      setUser({ ...newUser });
+    if (!existing) {
+      showLoginError('ไม่พบชื่อผู้ใช้นี้ กรุณาสมัครสมาชิกก่อนเข้าสู่ระบบ');
+      return;
     }
 
-    showAlert({ title: 'เข้าสู่ระบบสำเร็จ', message: `ยินดีต้อนรับ ${username}`, type: 'success' });
+    if (existing.password !== password) {
+      showLoginError('รหัสผ่านไม่ถูกต้อง');
+      return;
+    }
+
+    existing.lastLogin = new Date().toISOString();
+    saveUsers(users);
+    setUser({ ...existing });
+
+    showAlert({ title: 'เข้าสู่ระบบสำเร็จ', message: `ยินดีต้อนรับ ${existing.displayName || username}`, type: 'success' });
+    window.setTimeout(() => { window.location.href = 'index.html'; }, 450);
+  });
+}
+
+function initRegister() {
+  const form = document.querySelector('[data-register-form]');
+  const error = document.querySelector('[data-register-error]');
+  if (!form) return;
+
+  if (getUser()) {
+    window.location.href = 'index.html';
+    return;
+  }
+
+  const showRegisterError = (message) => {
+    error.textContent = message;
+    error.hidden = false;
+    showAlert({ title: 'สมัครสมาชิกไม่สำเร็จ', message, type: 'error' });
+  };
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const displayName = String(formData.get('displayName') || '').trim();
+    const username = String(formData.get('username') || '').trim();
+    const password = String(formData.get('password') || '').trim();
+    const passwordConfirm = String(formData.get('passwordConfirm') || '').trim();
+
+    if (!username || !password || !passwordConfirm) {
+      showRegisterError('กรุณากรอกข้อมูลให้ครบทุกช่อง');
+      return;
+    }
+
+    if (password.length < 6) {
+      showRegisterError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+      return;
+    }
+
+    if (password !== passwordConfirm) {
+      showRegisterError('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน');
+      return;
+    }
+
+    if (findUser(username)) {
+      showRegisterError('มีชื่อผู้ใช้นี้อยู่แล้ว กรุณาเลือกชื่ออื่น');
+      return;
+    }
+
+    const users = getUsers();
+    const newUser = {
+      id: makeId(),
+      username,
+      password,
+      role: username.toLowerCase() === 'admin' ? 'admin' : 'user',
+      displayName: displayName || username,
+      balance: 0,
+      createdAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
+    };
+    users.push(newUser);
+    saveUsers(users);
+    setUser({ ...newUser });
+
+    showAlert({ title: 'สมัครสมาชิกสำเร็จ', message: `ยินดีต้อนรับ ${newUser.displayName}`, type: 'success' });
     window.setTimeout(() => { window.location.href = 'index.html'; }, 450);
   });
 }
@@ -792,6 +846,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-logout]').forEach((button) => button.addEventListener('click', logout));
   initMobileNav();
   if (document.body.dataset.page === 'login') initLogin();
+  if (document.body.dataset.page === 'register') initRegister();
   initHeroSlider();
   if (document.body.dataset.protected === 'true') {
     initStore();
