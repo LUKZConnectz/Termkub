@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>เติมเงินและเพิ่มแต้ม | Freal Boxser</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+Thai:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+</head>
+<body data-protected="true" data-page="topup">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="logo" href="index.html" aria-label="Freal Boxser home"><span class="logo-main">FREAL</span><span class="logo-sub">BOXSER</span></a>
+      <nav class="toolbar" aria-label="main navigation">
+        <a class="nav-link" href="index.html" data-nav="home"><i data-lucide="store"></i><span>ร้านค้า</span></a>
+        <a class="nav-link" href="cart.html" data-nav="cart"><i data-lucide="shopping-basket"></i><span>ตะกร้า</span><em data-cart-count>0</em></a>
+        <a class="nav-link" href="orders.html" data-nav="orders"><i data-lucide="receipt-text"></i><span>ออเดอร์</span></a>
+        <a class="nav-link donate-link" href="donate.html" data-nav="donate"><i data-lucide="heart-handshake"></i><span>โดเนท</span></a>
+        <a class="nav-link admin-only" href="admin.html" data-nav="admin"><i data-lucide="settings"></i><span>แอดมิน</span></a>
+        <a class="pill user-pill" href="profile.html"><span class="avatar"><i data-lucide="badge-user"></i></span><span data-username>user</span></a>
+        <button class="icon-btn" type="button" aria-label="สลับโหมดสว่าง/มืด" data-theme-toggle><i data-lucide="sun-moon"></i></button>
+        <button class="pill logout-pill" type="button" data-logout>ออกจากระบบ</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="topup-shell">
+    <section class="topup-card" aria-labelledby="topup-title">
+      <h1 id="topup-title">
+        <span class="wallet-icon" aria-hidden="true"><i data-lucide="wallet-cards"></i></span>
+        เติมเงินและเพิ่มแต้ม
+      </h1>
+      <form class="topup-form" data-topup-form action="#" method="post">
+        <label class="sr-only" for="slip-url">ลิงก์อั่งเปา</label>
+        <input id="slip-url" name="slip-url" type="url" placeholder="ลิงก์อั่งเปา" autocomplete="off" />
+        <button class="pill topup-submit" type="submit"><i data-lucide="badge-plus" aria-hidden="true"></i>เติมเงิน</button>
+      </form>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
