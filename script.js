@@ -323,8 +323,71 @@ function initRegister() {
   });
 }
 
+function isSameDay(dateValue, reference = new Date()) {
+  if (!dateValue) return false;
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return false;
+  return date.toDateString() === reference.toDateString();
+}
+
+function orderAmount(order) {
+  return (order.items || []).reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0);
+}
+
+function computeStoreStats() {
+  const users = getUsers();
+  const orders = readList(ORDERS_KEY);
+  const today = new Date();
+  const totalUsers = users.length;
+  const usersToday = users.filter((user) => isSameDay(user.lastLogin, today) || isSameDay(user.createdAt, today)).length;
+  const totalPurchase = orders.reduce((sum, order) => sum + orderAmount(order), 0);
+  const salesToday = orders.filter((order) => isSameDay(order.createdAt, today)).reduce((sum, order) => sum + orderAmount(order), 0);
+  return { totalUsers, usersToday, totalPurchase, salesToday };
+}
+
+function formatCompactNumber(value) {
+  try { return new Intl.NumberFormat('th-TH', { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value) || 0); }
+  catch { return String(Math.round(Number(value) || 0)); }
+}
+
+function renderStoreStats() {
+  const grid = document.querySelector('[data-stats-grid]');
+  if (!grid) return;
+  const stats = computeStoreStats();
+
+  const setStat = (key, rawValue, isMoney) => {
+    const card = grid.querySelector(`[data-stat="${key}"]`);
+    if (!card) return;
+    const valueEl = card.querySelector('[data-stat-value]');
+    const flairEl = card.querySelector('[data-stat-flair]');
+    if (valueEl) valueEl.textContent = isMoney ? formatMoney(rawValue) : Number(rawValue).toLocaleString('th-TH');
+    if (flairEl) flairEl.textContent = isMoney ? `฿${formatCompactNumber(rawValue)}` : formatCompactNumber(rawValue);
+  };
+
+  setStat('total-users', stats.totalUsers, false);
+  setStat('users-today', stats.usersToday, false);
+  setStat('total-purchase', stats.totalPurchase, true);
+  setStat('sales-today', stats.salesToday, true);
+}
+
+let storeStatsTimer = null;
+function initStoreStatsLive() {
+  const grid = document.querySelector('[data-stats-grid]');
+  if (!grid) return;
+
+  renderStoreStats();
+  if (storeStatsTimer) window.clearInterval(storeStatsTimer);
+  storeStatsTimer = window.setInterval(renderStoreStats, 3000);
+
+  window.addEventListener('storage', (event) => {
+    if (!event.key || [USERS_KEY, ORDERS_KEY].includes(event.key)) renderStoreStats();
+  });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) renderStoreStats(); });
+}
+
 function initStore() {
   if (!requireAuth()) return;
+  initStoreStatsLive();
   renderStoreProducts();
   const modal = document.querySelector('[data-product-modal]');
   if (!modal) return;
