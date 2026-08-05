@@ -1,0 +1,36 @@
+'use server';
+
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+
+export async function login(formData: FormData) {
+  const email = String(formData.get('email') || '');
+  const password = String(formData.get('password') || '');
+  const next = String(formData.get('next') || '/');
+
+  const supabase = createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    redirect(`/login?error=${encodeURIComponent(error.message)}`);
+  }
+  redirect(next || '/');
+}
+
+export async function register(formData: FormData) {
+  const email = String(formData.get('email') || '');
+  const password = String(formData.get('password') || '');
+  const username = String(formData.get('username') || '');
+
+  const supabase = createClient();
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { username } },
+  });
+
+  if (error) {
+    redirect(`/register?error=${encodeURIComponent(error.message)}`);
+  }
+  redirect('/login?registered=1');
+}
