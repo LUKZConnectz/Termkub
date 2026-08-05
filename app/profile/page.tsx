@@ -11,9 +11,9 @@ export default async function ProfilePage() {
     <div className="mx-auto max-w-md">
       <div className="card flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-black">{profile?.username}</h1>
-        <p className="text-sm text-white/50">{user?.email}</p>
+        <p className="text-sm text-muted">{user?.email}</p>
         <p className="mt-4 text-3xl font-black text-accent">฿{(profile?.balance || 0).toLocaleString()}</p>
-        <p className="text-sm text-white/50">ยอดเงินคงเหลือ</p>
+        <p className="text-sm text-muted">ยอดเงินคงเหลือ</p>
       </div>
     </div>
   );

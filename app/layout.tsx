@@ -24,7 +24,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="th">
       <body>
         <Header profile={profile} />
-        <main className="mx-auto max-w-6xl px-4 pb-16 pt-8">{children}</main>
+        <main className="mx-auto w-[min(1024px,calc(100%-40px))] pb-16 pt-6">{children}</main>
       </body>
     </html>
   );

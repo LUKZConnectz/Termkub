@@ -24,9 +24,9 @@ export default function CheckoutButton({ insufficientFunds }: { insufficientFund
   return (
     <div className="flex flex-col gap-2">
       {insufficientFunds && (
-        <p className="text-sm text-amber-400">ยอดเงินไม่พอ กรุณาเติมเงินก่อนชำระเงิน</p>
+        <p className="text-sm text-amber-700">ยอดเงินไม่พอ กรุณาเติมเงินก่อนชำระเงิน</p>
       )}
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
       <button className="btn-accent" disabled={isPending || insufficientFunds} onClick={handleCheckout}>
         {isPending ? 'กำลังชำระเงิน...' : 'ชำระเงิน'}
       </button>

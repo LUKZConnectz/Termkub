@@ -17,10 +17,10 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_COLOR: Record<string, string> = {
-  pending: 'bg-white/10 text-white/70',
-  submitted: 'bg-amber-500/10 text-amber-400',
-  approved: 'bg-green-500/10 text-green-400',
-  rejected: 'bg-red-500/10 text-red-400',
+  pending: 'bg-white/10 text-muted',
+  submitted: 'bg-amber-50 text-amber-700',
+  approved: 'bg-green-50 text-green-700',
+  rejected: 'bg-red-50 text-red-600',
 };
 
 export default function TopupFlow({ history }: { history: TopupRequest[] }) {
@@ -79,14 +79,14 @@ export default function TopupFlow({ history }: { history: TopupRequest[] }) {
     <div className="flex flex-col gap-6">
       {!activeRequest && (
         <div className="card flex flex-col gap-4">
-          <label className="text-sm text-white/70">เลือกจำนวนเงินที่ต้องการเติม</label>
+          <label className="text-sm text-muted">เลือกจำนวนเงินที่ต้องการเติม</label>
           <div className="flex flex-wrap gap-2">
             {PRESET_AMOUNTS.map((preset) => (
               <button
                 key={preset}
                 type="button"
                 onClick={() => setAmount(preset)}
-                className={`btn-ghost !px-4 !py-1.5 ${amount === preset ? '!border-accent !text-white' : ''}`}
+                className={`btn-ghost !px-4 !py-1.5 ${amount === preset ? '!border-accent !bg-accent !text-white' : ''}`}
               >
                 ฿{preset}
               </button>
@@ -100,7 +100,7 @@ export default function TopupFlow({ history }: { history: TopupRequest[] }) {
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
           />
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
           <button className="btn-accent" onClick={handleGenerate} disabled={isPending}>
             {isPending ? 'กำลังสร้าง QR...' : 'สร้าง QR พร้อมเพย์'}
           </button>
@@ -109,10 +109,10 @@ export default function TopupFlow({ history }: { history: TopupRequest[] }) {
 
       {activeRequest && qrDataUrl && activeRequest.status === 'pending' && (
         <div className="card flex flex-col items-center gap-4 text-center">
-          <p className="text-white/70">สแกน QR เพื่อชำระเงินจำนวน</p>
+          <p className="text-muted">สแกน QR เพื่อชำระเงินจำนวน</p>
           <p className="text-2xl font-black text-accent">฿{activeRequest.amount.toLocaleString()}</p>
           <Image src={qrDataUrl} alt="PromptPay QR" width={260} height={260} className="rounded-xl border border-border" unoptimized />
-          <p className="text-xs text-white/50">หลังโอนเงินแล้ว อัปโหลดสลิปเพื่อยืนยันการเติมเงิน</p>
+          <p className="text-xs text-muted">หลังโอนเงินแล้ว อัปโหลดสลิปเพื่อยืนยันการเติมเงิน</p>
 
           <label className="btn-accent cursor-pointer">
             {uploading ? 'กำลังอัปโหลด...' : 'อัปโหลดสลิปโอนเงิน'}
@@ -124,8 +124,8 @@ export default function TopupFlow({ history }: { history: TopupRequest[] }) {
               onChange={(e) => e.target.files?.[0] && handleSlipUpload(e.target.files[0])}
             />
           </label>
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          <button className="text-sm text-white/50 hover:underline" onClick={() => { setActiveRequest(null); setQrDataUrl(null); }}>
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <button className="text-sm text-muted hover:underline" onClick={() => { setActiveRequest(null); setQrDataUrl(null); }}>
             ยกเลิกและเริ่มใหม่
           </button>
         </div>
@@ -134,19 +134,19 @@ export default function TopupFlow({ history }: { history: TopupRequest[] }) {
       {activeRequest && activeRequest.status === 'submitted' && (
         <div className="card text-center">
           <p className="mb-2 text-lg font-bold">ส่งสลิปแล้ว กำลังรอแอดมินตรวจสอบ</p>
-          <p className="text-sm text-white/60">ยอดเงิน ฿{activeRequest.amount.toLocaleString()} จะถูกเติมเข้าบัญชีเมื่อได้รับการอนุมัติ</p>
+          <p className="text-sm text-muted">ยอดเงิน ฿{activeRequest.amount.toLocaleString()} จะถูกเติมเข้าบัญชีเมื่อได้รับการอนุมัติ</p>
         </div>
       )}
 
       <div>
         <h2 className="mb-3 text-lg font-bold">ประวัติการเติมเงิน</h2>
         <div className="flex flex-col gap-2">
-          {history.length === 0 && <p className="text-sm text-white/50">ยังไม่มีประวัติ</p>}
+          {history.length === 0 && <p className="text-sm text-muted">ยังไม่มีประวัติ</p>}
           {history.map((req) => (
             <div key={req.id} className="card flex items-center justify-between !p-4">
               <div>
                 <p className="font-semibold">฿{req.amount.toLocaleString()}</p>
-                <p className="text-xs text-white/50">{new Date(req.created_at).toLocaleString('th-TH')}</p>
+                <p className="text-xs text-muted">{new Date(req.created_at).toLocaleString('th-TH')}</p>
               </div>
               <span className={`badge ${STATUS_COLOR[req.status]}`}>{STATUS_LABEL[req.status]}</span>
             </div>

@@ -24,10 +24,14 @@ export default function AddToCartButton({ productId, disabled }: { productId: st
 
   return (
     <div className="flex flex-col gap-1">
-      <button className="btn-accent" onClick={handleClick} disabled={disabled || isPending}>
+      <button
+        className="btn-accent w-full !rounded !py-1.5 !text-xs"
+        onClick={handleClick}
+        disabled={disabled || isPending}
+      >
         {isPending ? 'กำลังเพิ่ม...' : 'เพิ่มลงตะกร้า'}
       </button>
-      {message && <span className="text-xs text-white/60">{message}</span>}
+      {message && <span className="text-xs text-muted">{message}</span>}
     </div>
   );
 }

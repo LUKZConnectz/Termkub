@@ -21,7 +21,7 @@ export default async function CartPage() {
   return (
     <div>
       <h1 className="mb-6 text-3xl font-black">ตะกร้าสินค้า</h1>
-      {list.length === 0 && <p className="text-white/60">ยังไม่มีสินค้าในตะกร้า</p>}
+      {list.length === 0 && <p className="text-muted">ยังไม่มีสินค้าในตะกร้า</p>}
 
       <div className="flex flex-col gap-3">
         {list.map((item) => (
@@ -35,7 +35,7 @@ export default async function CartPage() {
             <span>ยอดรวม</span>
             <span className="font-black text-accent">฿{total.toLocaleString()}</span>
           </div>
-          <div className="flex justify-between text-sm text-white/60">
+          <div className="flex justify-between text-sm text-muted">
             <span>ยอดเงินคงเหลือ</span>
             <span>฿{(profile?.balance || 0).toLocaleString()}</span>
           </div>

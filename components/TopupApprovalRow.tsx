@@ -21,10 +21,10 @@ export default function TopupApprovalRow({ request }: { request: any }) {
     <div className="card flex flex-wrap items-center justify-between gap-4 !p-4">
       <div>
         <p className="font-semibold">{request.profiles?.username}</p>
-        <p className="text-sm text-white/50">
+        <p className="text-sm text-muted">
           ฿{request.amount.toLocaleString()} · {new Date(request.created_at).toLocaleString('th-TH')}
         </p>
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-red-600">{error}</p>}
       </div>
       <div className="flex items-center gap-3">
         {request.slip_url ? (
@@ -32,7 +32,7 @@ export default function TopupApprovalRow({ request }: { request: any }) {
             ดูสลิป
           </a>
         ) : (
-          <span className="text-sm text-white/40">ยังไม่มีสลิป</span>
+          <span className="text-sm text-muted/70">ยังไม่มีสลิป</span>
         )}
         <button className="btn-accent !px-4 !py-1.5" disabled={isPending || !request.slip_url} onClick={() => handle(approveTopup)}>
           อนุมัติ

@@ -14,7 +14,7 @@ export default async function DonatePage() {
   return (
     <div className="mx-auto max-w-lg">
       <h1 className="mb-2 text-center text-3xl font-black">โดเนทสนับสนุนร้าน</h1>
-      <p className="mb-6 text-center text-white/60">ยอดโดเนทรวม ฿{total.toLocaleString()}</p>
+      <p className="mb-6 text-center text-muted">ยอดโดเนทรวม ฿{total.toLocaleString()}</p>
       <DonateForm />
 
       <h2 className="mb-3 mt-8 text-lg font-bold">ผู้สนับสนุนล่าสุด</h2>

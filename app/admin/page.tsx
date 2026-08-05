@@ -26,7 +26,7 @@ export default async function AdminPage() {
       <section>
         <h2 className="mb-3 text-xl font-bold">คำขอเติมเงินที่รอตรวจสอบ</h2>
         <div className="flex flex-col gap-2">
-          {(!topups || topups.length === 0) && <p className="text-white/50">ไม่มีคำขอค้างอยู่</p>}
+          {(!topups || topups.length === 0) && <p className="text-muted">ไม่มีคำขอค้างอยู่</p>}
           {topups?.map((req: any) => (
             <TopupApprovalRow key={req.id} request={req} />
           ))}
@@ -44,7 +44,7 @@ export default async function AdminPage() {
           {recentOrders?.map((order: any) => (
             <div key={order.id} className="card flex items-center justify-between !p-4">
               <span>{order.profiles?.username}</span>
-              <span className="text-sm text-white/50">{new Date(order.created_at).toLocaleString('th-TH')}</span>
+              <span className="text-sm text-muted">{new Date(order.created_at).toLocaleString('th-TH')}</span>
               <span className="font-bold text-accent">฿{order.total.toLocaleString()}</span>
             </div>
           ))}

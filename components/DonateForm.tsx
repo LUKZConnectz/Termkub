@@ -34,8 +34,8 @@ export default function DonateForm() {
         ข้อความ (ไม่บังคับ)
         <input className="input" type="text" name="message" maxLength={200} />
       </label>
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      {success && <p className="text-sm text-green-400">ขอบคุณสำหรับการสนับสนุน!</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      {success && <p className="text-sm text-green-700">ขอบคุณสำหรับการสนับสนุน!</p>}
       <button className="btn-accent" type="submit" disabled={isPending}>
         {isPending ? 'กำลังส่ง...' : 'โดเนทเลย'}
       </button>

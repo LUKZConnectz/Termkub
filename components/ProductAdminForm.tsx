@@ -44,9 +44,9 @@ export default function ProductAdminForm({ products }: { products: Product[] }) 
           <div key={p.id} className="card flex items-center justify-between !p-4">
             <div>
               <p className="font-semibold">{p.name}</p>
-              <p className="text-sm text-white/50">฿{p.price.toLocaleString()} · สต็อก {p.stock}</p>
+              <p className="text-sm text-muted">฿{p.price.toLocaleString()} · สต็อก {p.stock}</p>
             </div>
-            <button className="text-sm text-red-400 hover:underline" disabled={isPending} onClick={() => handleDelete(p.id)}>
+            <button className="text-sm text-red-600 hover:underline" disabled={isPending} onClick={() => handleDelete(p.id)}>
               ลบ
             </button>
           </div>
